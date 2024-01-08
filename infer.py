@@ -1,4 +1,4 @@
-from model import ModelCLR
+from model import ConSS
 import yaml
 import os
 import torch
@@ -24,7 +24,7 @@ class ModelInference(object):
 
         self.config = yaml.load(open(config_path, "r"), Loader=yaml.FullLoader)
 
-        self.model = ModelCLR(**self.config["model_config"]).to(self.device)
+        self.model = ConSS(**self.config["model_config"]).to(self.device)
         state_dict = torch.load(pretrain_model_path)
         self.model.load_state_dict(state_dict)
         self.model.eval()
