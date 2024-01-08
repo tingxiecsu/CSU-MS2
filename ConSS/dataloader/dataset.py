@@ -32,6 +32,26 @@ class ClrDataset(Dataset):
         spec = torch.from_numpy(spec).to(torch.float32)
         return v_d,spec
 
+class re_train_dataset(Dataset):
+    def __init__(self, 
+                file, 
+                list_IDs,
+                transform=None):
+
+        self.clr_frame = file
+        self.list_IDs = list_IDs
+
+    def __len__(self):
+        return len(self.clr_frame)
+
+    def __getitem__(self, idx):
+        index = self.list_IDs[idx]
+        v_d = self.clr_frame.loc[index,'Graph']
+        spec = self.clr_frame.loc[index,'MS2']
+        #spec = np.array(ast.literal_eval(spec))
+        spec = torch.from_numpy(spec).to(torch.float32)
+        return v_d,spec
+
 class re_eval_dataset(Dataset):
     def __init__(self, 
                 file, 
