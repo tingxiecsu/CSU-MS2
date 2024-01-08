@@ -146,6 +146,40 @@ def graph_spec2vec_calculation(smiles,spectrum,spec2vec_model_file):
     print("Calculated", len(df), "molecular graph-mass spectrometry pairs")
     return df
 
+def graph_spec2vec_valid_calculation(smiles,spectra,formulas,spec2vec_model_file):
+    print("calculating molecular graphs")
+    df = pd.DataFrame(columns=['Graph','MS2','formula'])
+    model = gensim.models.Word2Vec.load(spec2vec_model_file)
+    spectovec = spec_to_wordvector(model=model,intensity_weighting_power=0.5,allowed_missing_percentage=5)
+    for i in tqdm(range(len(smiles))):
+        try:
+          smi = smiles[i]
+          formula = formulas[i]
+          v_d = MolToGraph(smi)
+          spectrum = spectra[i]
+          #spec2 = data_augmentation(spectrum)
+          spectra_in = spec.SpectrumDocument(spectrum,n_decimals=2)
+          spec_vector = spectovec._calculate_embedding(spectra_in)
+          df.loc[len(df.index)] = [v_d,spec_vector,formula]
+        except:
+            pass
+    print("Calculated", len(df), "molecular graph-mass spectrometry pairs")
+    return df
+    
+def graph_calculation(smiles,formulas):
+    print("calculating molecular graphs")
+    df = pd.DataFrame(columns=['Graph','formula'])
+    for i in tqdm(range(len(smiles))):
+        try:
+          smi = smiles[i]
+          formula=formulas[i]
+          v_d = MolToGraph(smi)
+          df.loc[len(df.index)] = [v_d,formula]
+        except:
+          pass
+    print("Calculated", len(df), "molecular graphs")
+    return df
+
 class DataSetWrapper(object):
     def __init__(self, 
                 batch_size, 
