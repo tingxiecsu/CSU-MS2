@@ -161,7 +161,7 @@ class MSModel_cnn(nn.Module):
         x = self.linears(x)
         return x
 
-class ModelCLR(nn.Module):
+class ConSS(nn.Module):
     def __init__(self, num_layer, emb_dim, feat_dim, drop_ratio, pool,output_channels, channels, input_channels,embed_dim):
         super(ModelCLR, self).__init__()
 
