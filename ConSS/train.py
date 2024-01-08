@@ -7,7 +7,7 @@ Created on Wed Apr 27 14:24:01 2022
 import torch
 
 # from models.resnet_clr import ResNetSimCLR
-from model import ModelCLR
+from model import ConSS
 from torch.utils.tensorboard import SummaryWriter
 import torch.nn.functional as F
 from loss.nt_xent import NTXentLoss
@@ -58,7 +58,7 @@ class SimCLR(object):
         train_loader, valid_loader = self.dataset.get_data_loaders()
 
         #Model Resnet Initialize
-        model = ModelCLR(**self.config["model_config"]).to(self.device)
+        model = ConSS(**self.config["model_config"]).to(self.device)
         if self.config["smilesmodel_finetune"]:
             state_dict = torch.load(self.config["smilesmodel_finetune_path"], map_location=self.device)
             model.Smiles_model.load_state_dict(state_dict)
