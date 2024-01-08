@@ -196,4 +196,57 @@ class DataSetWrapper(object):
                                   num_workers=self.num_workers, drop_last=True,collate_fn = dgl_collate_func)
         return train_loader, valid_loader
 
+class DataSetWrapper_retrieval(object):
+    def __init__(self, 
+                batch_size, 
+                num_workers, 
+                valid_size, 
+                train_ms2_file,
+                train_smi_file,
+                valid_ms2_file,
+                valid_smi_file,
+                valid_formula_file,
+                reference_library,
+                spec2vec_model_file):
+                
+        self.batch_size = batch_size
+        self.num_workers = num_workers
+        self.valid_size = valid_size
+        self.train_ms2_file = train_ms2_file
+        self.train_smi_file = train_smi_file
+        self.valid_ms2_file = valid_ms2_file
+        self.valid_smi_file = valid_smi_file
+        self.valid_formula_file = valid_formula_file
+        self.reference_library = pd.read_csv(reference_library)
+        self.smiles_reference_library = list(self.reference_library['SMILES'])
+        self.formulas_reference_library = list(self.reference_library['formula'])
+        self.spec2vec_model_file = spec2vec_model_file
 
+    def get_data_loaders(self):
+        self.train_smiles = np.load(self.train_smi_file).tolist()
+        self.train_ms2 = list(load_from_mgf(self.train_ms2_file))
+        self.valid_smiles = np.load(self.valid_smi_file).tolist()
+        self.valid_formulas = np.load(self.valid_formula_file).tolist()
+        self.valid_ms2 = list(load_from_mgf(self.valid_ms2_file))
+        self.train_graph_file = graph_spec2vec_calculation(self.train_smiles,self.train_ms2,self.spec2vec_model_file)
+        self.valid_graph_file = graph_spec2vec_valid_calculation(self.valid_smiles,self.valid_ms2,self.valid_formulas,self.spec2vec_model_file)
+        self.reference_smiles = graph_calculation(self.smiles_reference_library,self.formulas_reference_library)
+        train_dataset = re_train_dataset(self.train_graph_file,self.train_graph_file.index.values)
+        valid_dataset = re_eval_dataset(self.valid_graph_file,self.valid_graph_file.index.values,self.reference_smiles)
+        train_loader = DataLoader(
+                    train_dataset,
+                    batch_size=self.batch_size,
+                    num_workers=self.num_workers,
+                    shuffle=True,
+                    collate_fn=dgl_collate_func,
+                    drop_last=True
+                )
+        valid_loader = DataLoader(
+                    valid_dataset,
+                    batch_size=self.batch_size,
+                    num_workers=self.num_workers,
+                    shuffle=False,
+                    collate_fn=valid_collate_func,
+                    drop_last=False
+                )
+        return train_loader, valid_loader
