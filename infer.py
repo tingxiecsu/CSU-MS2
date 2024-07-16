@@ -1,13 +1,10 @@
-from model import ConSS
+from model import ModelCLR
 import yaml
 import os
 import torch
 import numpy as np
 import re
-from data_process import spec
-from data_process.spec_to_wordvector import spec_to_wordvector
 from torch_geometric.data import Data, Batch
-import gensim
 from dataloader.dataset_wrapper import MolToGraph
 from rdkit import Chem
 
@@ -23,8 +20,7 @@ class ModelInference(object):
             self.device = torch.device(device)
 
         self.config = yaml.load(open(config_path, "r"), Loader=yaml.FullLoader)
-
-        self.model = ConSS(**self.config["model_config"]).to(self.device)
+        self.model = ModelCLR(**self.config["model_config"]).to(self.device)
         state_dict = torch.load(pretrain_model_path)
         self.model.load_state_dict(state_dict)
         self.model.eval()
@@ -37,6 +33,7 @@ class ModelInference(object):
                 v_d = MolToGraph(smiles_str)
                 v_d = v_d.to(self.device)
                 smiles_tensor = self.model.smiles_encoder(v_d)
+                smiles_tensor=self.model.smi_esa(smiles_tensor,v_d.batch)
                 smiles_tensor = self.model.smi_proj(smiles_tensor)
                 smiles_tensor = smiles_tensor/smiles_tensor.norm(dim=-1, keepdim=True)
                 return smiles_tensor
@@ -49,30 +46,47 @@ class ModelInference(object):
                 v_ds = Batch.from_data_list(graphs)
                 v_ds = v_ds.to(self.device)
                 smiles_tensor = self.model.smiles_encoder(v_ds)
+                smiles_tensor=self.model.smi_esa(smiles_tensor,v_ds.batch)
                 smiles_tensor = self.model.smi_proj(smiles_tensor)
                 smiles_tensor = smiles_tensor/smiles_tensor.norm(dim=-1, keepdim=True)
                 return smiles_tensor
 
-    def ms2_encode(self, ms2_list,spec2vec_model_file):
-        spec_model = gensim.models.Word2Vec.load(spec2vec_model_file)
-        spectovec = spec_to_wordvector(model=spec_model,intensity_weighting_power=0.5,allowed_missing_percentage=5)
+    def ms2_encode(self, ms2_list):
         with torch.no_grad():
             if not isinstance(ms2_list, list):
                 #single ms2
-                spectrum_in = spec.SpectrumDocument(ms2_list,n_decimals=2)
-                spec_vector = spectovec._calculate_embedding(spectrum_in)
-                spec_vector = torch.from_numpy(spec_vector).to(torch.float32)
-                spec_tensor = self.model.ms_encoder(spec_vector)
+                spec_mz = ms2_list.mz
+                spec_intens = ms2_list.intensities
+                num_peak = len(spec_mz)
+                spec_mz = np.around(spec_mz, decimals=4)
+                spec_mz = np.pad(spec_mz, (0, 300 - len(spec_mz)), mode='constant', constant_values=0)
+                spec_intens = np.pad(spec_intens, (0, 300 - len(spec_intens)), mode='constant', constant_values=0)
+                spec_mz= torch.tensor(spec_mz).float().unsqueeze(0)
+                spec_intens= torch.tensor(spec_intens).float().unsqueeze(0)
+                num_peak = torch.LongTensor(num_peak).unsqueeze(0)
+                spec_tensor,spec_mask = self.model.ms_encoder(spec_mz,spec_intens,num_peak)
+                spec_tensor=self.model.spec_esa(spec_tensor,spec_mask)
                 spec_tensor = self.model.spec_proj(spec_tensor)
                 spec_tensor = spec_tensor/spec_tensor.norm(dim=-1, keepdim=True)
                 return spec_tensor
             else:
                 # batch ms2
-                spectra_in = [spec.SpectrumDocument(i,n_decimals=2) for i in ms2_list]
-                spec_vector = [spectovec._calculate_embedding(i) for i in spectra_in]
-                spec_vector = [torch.from_numpy(i).to(torch.float32) for i in spec_vector]
-                spec_vector = torch.stack(spec_vector)
-                spec_tensor = self.model.ms_encoder(spec_vector)
+                spec_mzs = [spec.mz for spec in ms2_list]
+                spec_intens = [spec.intensities for spec in ms2_list]
+                num_peaks = [len(i) for i in spec_mzs]
+                spec_mzs = [np.around(spec_mz, decimals=4) for spec_mz in spec_mzs]
+                if len(spec_mzs[0]) > 300:
+                    spec_mzs = [spec_mzs[0][-300:]]
+                    spec_intens = [spec_intens[0][-300:]]
+                    num_peaks=[300]
+                else:
+                    spec_mzs = [np.pad(spec_mz, (0, 300 - len(spec_mz)), mode='constant', constant_values=0) for spec_mz in spec_mzs]
+                    spec_intens = [np.pad(spec_inten, (0, 300 - len(spec_inten)), mode='constant', constant_values=0) for spec_inten in spec_intens]
+                spec_mzs= torch.tensor(spec_mzs).float()
+                spec_intens= torch.tensor(spec_intens).float()
+                num_peaks = torch.LongTensor(num_peaks)
+                spec_tensor,spec_mask = self.model.ms_encoder(spec_mzs,spec_intens,num_peaks)
+                spec_tensor=self.model.spec_esa(spec_tensor,spec_mask)
                 spec_tensor = self.model.spec_proj(spec_tensor)
                 spec_tensor = spec_tensor/spec_tensor.norm(dim=-1, keepdim=True)
                 return spec_tensor
