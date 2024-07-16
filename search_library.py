@@ -75,39 +75,10 @@ def search_pubchem(formula, timeout=999):
                 else:
                     wh = np.where(np.array(smiles)==smiles_ij)[0][0]
                     all_cids[wh] = all_cids[wh] + ', ' + str(properties_ij['CID'])
-    mols = [Chem.MolFromSmiles(i) for i in smiles]
-    smiles = [Chem.MolToSmiles(i) for i in mols]
+    #mols = [Chem.MolFromSmiles(i) for i in smiles]
+    #smiles = [Chem.MolToSmiles(i) for i in mols]
     result = pd.DataFrame({'InChIKey': inchikey, 'SMILES': smiles, 'PubChem': all_cids})
     return result
-
-def isotope_pattern(formula, thres=0.99):
-    '''
-    Task: 
-        Generate theoretical isotope distribution
-    Parameters:
-        formula: str, chemical formula
-        thres: folat, abundance threshold
-    '''
-    if type(formula) is not str:
-        raise ValueError('input formula must be a character')
-    isotope = IsoSpecPy.IsoTotalProb(prob_to_cover = 0.99,formula=formula,  get_confs=True)
-    return {'mass': list(isotope.masses), 
-            'intensity': (np.exp(list(isotope.probs))/(max(np.exp(list(isotope.probs)))))}
-
-
-def compare_isotope(measured, expected, tolerance=0.001):
-    measured['intensity'] = measured['intensity']/sum(measured['intensity'])
-    expected['intensity'] = expected['intensity']/sum(expected['intensity'])
-    expected_m0 = expected['intensity'][0]
-    measured_m0 = measured['intensity'][0]
-    expected_m1 = sum(expected['intensity'][(expected['mass'] > expected['mass'][0] - tolerance + 0.997) & (expected['mass'] < expected['mass'][0] + tolerance + 1.006)])
-    measured_m1 = sum(measured['intensity'][(measured['mass'] > measured['mass'][0] - tolerance + 0.997) & (measured['mass'] < measured['mass'][0] + tolerance + 1.006)])
-    expected_m2 = sum(expected['intensity'][(expected['mass'] > expected['mass'][0] - tolerance + 1.994) & (expected['mass'] < expected['mass'][0] + tolerance + 2.013)])
-    measured_m2 = sum(measured['intensity'][(measured['mass'] > measured['mass'][0] - tolerance + 1.994) & (measured['mass'] < measured['mass'][0] + tolerance + 2.013)])
-    expected_m3 = sum(expected['intensity'][(expected['mass'] > expected['mass'][0] - tolerance + 2.991) & (expected['mass'] < expected['mass'][0] + tolerance + 3.018)])
-    measured_m3 = sum(measured['intensity'][(measured['mass'] > measured['mass'][0] - tolerance + 2.991) & (measured['mass'] < measured['mass'][0] + tolerance + 3.018)])
-    score = (1 - abs(expected_m0 - measured_m0)) * (1 - abs(expected_m1 - measured_m1)) * (1 - abs(expected_m2 - measured_m2)) * (1 - abs(expected_m3 - measured_m3))
-    return score
 
 def get_feature(lst,save_name,model_inference,
                 n=256,flag_get_value=False):
@@ -120,14 +91,20 @@ def get_feature(lst,save_name,model_inference,
     print("start load batch")
     for i in range(0, len(lst), n):
        contexts.append(lst[i:i + n])
-
+    result,lst2=[],[]
+    for i in tqdm(contexts):
+        try:
+            result.append(fn(i).cpu())
+            lst2.append(i[0])
+        except:
+            print(i,'calculated failed')
     print("start encode batch")
-    result = [fn(i).cpu() for i in tqdm(contexts)]
+    #result = [fn(i).cpu() for i in tqdm(contexts)]
     result = torch.cat(result, 0)
     if flag_get_value is True:
         if save_name is not None:
             torch.save((result, lst), save_name)
-        return result, lst
+        return result, lst2
 
 def get_topK_result(library,ms_feature, smiles_feature, topK):
     indices = []
@@ -151,32 +128,29 @@ def get_topK_result(library,ms_feature, smiles_feature, topK):
 
 if __name__ == "__main__":
     # Load the model
-
-    config_path = ".../checkpoints/config.yaml"
-    pretrain_model_path = ".../checkpoints/model.pth"
+    # users Users can load the different collision energy level model according
+    # to the collision energy setting, or load three energy level models, and use 
+    # the weighted scores of different energy levels as the final score
+    config_path = "/model/low_energy/checkpoints/config.yaml"
+    pretrain_model_path = "/model/low_energy/checkpoints/checkpoints/model.pth"
     model_inference = ModelInference(config_path=config_path,
                                  pretrain_model_path=pretrain_model_path,
                                  device="cpu")
-    #indices, scores, candidates = [],[],[]
-    #formulaDB=pd.read_csv('.../formulaDB.csv')
-
-    output_file=''
+    output_file='.../'
     os.mkdir(output_file)
-    ms_list=list(load_from_mgf("/test.mgf"))
-    reference_library = pd.read_csv('.../reference_library.csv')
+    ms_list=list(load_from_mgf(".../.mgf"))
+    reference_library = pd.read_csv('...')
     for i in tqdm(range(len(ms_list))):
-        result=pd.DataFrame(columns=['smiles','score'])
-        spectrum = ms_list[i]
-        ms_feature = model_inference.ms2_encode(ms_list[i:i+1],".../nist_w2v/references.model")
-        # Construct a reference library by extracting structural feature vectors from SMILES strings
-        # This might take a long time
-        query_ms = float(spectrum.metadata['parent_mass'])
-        search_res=search_structure_from_mass(reference_library, query_ms, 30)
-        smiles_lst = list(search_res['SMILES'])
-        smiles_feature, smiles_list = get_feature(smiles_lst,save_name=None,
-            model_inference=model_inference,n=64,flag_get_value=True)
-        indice, score, candidate = get_topK_result(library=smiles_lst,ms_feature=ms_feature, 
-                                          smiles_feature=smiles_feature, topK=100)
-        result['smiles']=candidate[0]
-        result['score']=score[0]
-        result.to_csv(output_file+'results'+str(i)+'.csv')
+            result=pd.DataFrame(columns=['smiles','score'])
+            spectrum = ms_list[i]
+            ms_feature = model_inference.ms2_encode(ms_list[i:i+1])
+            query_ms = float(spectrum.metadata['precursor_mz'])-1.008
+            search_res=search_structure_from_mass(reference_library, query_ms, 10)
+            smiles_lst = list(search_res['SMILES'])
+            smiles_feature, smiles_list = get_feature(smiles_lst,save_name=None,
+                model_inference=model_inference,n=1,flag_get_value=True)
+            indice, score, candidate = get_topK_result(library=smiles_list,ms_feature=ms_feature, 
+                                              smiles_feature=smiles_feature, topK=100)
+            result['smiles']=candidate[0]
+            result['score']=score[0]
+            result.to_csv(output_file+'results'+str(i)+'.csv')
