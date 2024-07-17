@@ -20,7 +20,35 @@ The main packages can be seen in [requirements.txt](https://github.com/tingxiecs
 	conda activate ConSS
 	python -m pip install -r requirements.txt
 	```
+
 ## Model training
-Train the model based on your own Structure-Spectrum training dataset with [run](https://github.com/tingxiecsu/ConSS/blob/main/ConSS/run.py) function. Multi-gpu or multi-node parallel training can be performed using Distributed Data Parallel (DDP) provided in the code.
+Train the model based on your own Structure-Spectrum training dataset with [run.py](https://github.com/tingxiecsu/ConSS/blob/main/ConSS/run.py) function. Multi-gpu or multi-node parallel training can be performed using Distributed Data Parallel (DDP) provided in the code.
 
     main(rank, world_size, num_gpus, rank_is_set, ds_args)
+
+## Library searching
+Searching in a smiles library with [search_library.py](https://github.com/tingxiecsu/ConSS/blob/main/search_library.py) function. users Users can load the different collision energy level model according to the collision energy setting, or load three energy level models, and use the weighted scores of different energy levels as the final score
+
+    config_path = "/model/low_energy/checkpoints/config.yaml"
+    pretrain_model_path = "/model/low_energy/checkpoints/checkpoints/model.pth"
+    model_inference = ModelInference(config_path=config_path,
+                                 pretrain_model_path=pretrain_model_path,
+                                 device="cpu")
+    output_file='.../'
+    os.mkdir(output_file)
+    ms_list=list(load_from_mgf(".../.mgf"))
+    reference_library = pd.read_csv('...')
+    for i in tqdm(range(len(ms_list))):
+            result=pd.DataFrame(columns=['smiles','score'])
+            spectrum = ms_list[i]
+            ms_feature = model_inference.ms2_encode(ms_list[i:i+1])
+            query_ms = float(spectrum.metadata['precursor_mz'])-1.008
+            search_res=search_structure_from_mass(reference_library, query_ms, 10)
+            smiles_lst = list(search_res['SMILES'])
+            smiles_feature, smiles_list = get_feature(smiles_lst,save_name=None,
+                model_inference=model_inference,n=1,flag_get_value=True)
+            indice, score, candidate = get_topK_result(library=smiles_list,ms_feature=ms_feature, 
+                                              smiles_feature=smiles_feature, topK=100)
+            result['smiles']=candidate[0]
+            result['score']=score[0]
+            result.to_csv(output_file+'results'+str(i)+'.csv')
