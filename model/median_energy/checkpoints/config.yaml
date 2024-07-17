@@ -2,8 +2,8 @@ batch_size: 1050
 epochs: 500
 eval_every_n_epochs: 5
 smilesmodel_finetune: False
-smilesmodel_finetune_path: "/public/home/hpc212307003/molclr_cnn/nist_w2v/pretrained_gin/checkpoints/model.pth"
-fine_tune_from: "/home/xieting/graph_transformer_esa/runs/msgym_dem4_esa_hcd_20/"
+smilesmodel_finetune_path: ""
+fine_tune_from: ""
 log_every_n_steps: 2
 learning_rate: 1e-06
 weight_decay: 0.0001
@@ -25,8 +25,8 @@ dataset:
   s: 1
   num_workers: 0
   valid_size: 0.2
-  ms2_file: "/home/xieting/cl_data/train2_hcd_posh_20.mgf"
-  smi_file: "/home/xieting/cl_data/train2_hcd_posh_20_smi.npy"
+  ms2_file: ".../.mgf"
+  smi_file: ".../.npy"
 
 loss:
   temperature: 0.1
