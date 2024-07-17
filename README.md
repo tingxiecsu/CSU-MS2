@@ -16,7 +16,7 @@ The main packages can be seen in [requirements.txt](https://github.com/tingxiecs
   https://www.anaconda.com/
 - Install main packages in requirements.txt with following commands 
 	```shell
-	conda create --name ConSS python=3.8.13
+	conda create --name ConSS python=3.8.18
 	conda activate ConSS
 	python -m pip install -r requirements.txt
 	```
