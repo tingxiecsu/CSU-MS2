@@ -1,11 +1,11 @@
-batch_size: 2000
-epochs: 400
+batch_size: 1100
+epochs: 2000
 eval_every_n_epochs: 5
-smilesmodel_finetune: True
-smilesmodel_finetune_path: ".../nist_w2v/pretrained_gin/checkpoints/model.pth"
-fine_tune_from: " "
+smilesmodel_finetune: False
+smilesmodel_finetune_path: ".../"
+fine_tune_from: ".../"
 log_every_n_steps: 2
-learning_rate: 5e-05
+learning_rate: 1e-06
 weight_decay: 0.0001
 fp16_precision: True
 truncation: True
@@ -16,18 +16,17 @@ model_config:
   feat_dim: 512
   drop_ratio: 0.3
   pool : mean
-  channels: 32
-  input_channels: 300
-  output_channels: 256
+  spec_embed_dim: 256
+  dropout: 0.1
+  layers: 3
   embed_dim: 256
   
 dataset:
   s: 1
-  num_workers: 4
+  num_workers: 0
   valid_size: 0.2
-  ms2_file: ""
-  smi_file: ""
-  spec2vec_model_file: ".../nist_w2v/references.model"
+  ms2_file: ".../.mgf"
+  smi_file: ".../.npy"
 
 loss:
   temperature: 0.1
