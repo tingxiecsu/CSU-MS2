@@ -20,10 +20,7 @@ The main packages can be seen in [requirements.txt](https://github.com/tingxiecs
 	conda activate ConSS
 	python -m pip install -r requirements.txt
 	```
-## Predicting CCS
-The CCS prediction of the molecule is obtained by feeding the Adduct Graph into the already trained model with [Model_prediction](https://github.com/tingxiecsu/GraphCCS/blob/main/GraphCCS/train.py#L251) function.
+## Model training
+Train the model based on your own Structure-Spectrum training dataset with [run](https://github.com/tingxiecsu/ConSS/blob/main/ConSS/run.py) function. Multi-gpu or multi-node parallel training can be performed using Distributed Data Parallel (DDP) provided in the code.
 
-    model_predict = Predict(dataset,model_path,**config)
-*Optionnal args*
-- dataset : A DataFrame file including SMILES, Adduct Type
-- model_path: File path where the model is stored
+    main(rank, world_size, num_gpus, rank_is_set, ds_args)
