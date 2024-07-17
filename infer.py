@@ -1,4 +1,4 @@
-from model import ModelCLR
+from ConSS.model import ModelCLR
 import yaml
 import os
 import torch
