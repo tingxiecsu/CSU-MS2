@@ -5,7 +5,7 @@ Created on Thu Jun 29 10:32:46 2023
 @author: ZNDX002
 """
 import bisect
-from infer import ModelInference
+from ConSS.infer import ModelInference
 import numpy as np
 import torch
 from tqdm import tqdm
