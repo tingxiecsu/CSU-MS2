@@ -27,7 +27,7 @@ Train the model based on your own Structure-Spectrum training dataset with [run.
     main(rank, world_size, num_gpus, rank_is_set, ds_args)
 
 ## Library searching
-Searching in a smiles library with [search_library.py](https://github.com/tingxiecsu/ConSS/blob/main/search_library.py) function. users Users can load the different collision energy level model according to the collision energy setting, or load three energy level models, and use the weighted scores of different energy levels as the final score
+Searching in a smiles library with [search_library.py](https://github.com/tingxiecsu/ConSS/blob/main/search_library.py) function. users Users can load the different collision energy level model according to the collision energy setting, or load three energy level models, and use the weighted scores of different energy levels as the final score with [search_user_defined_library.py](https://github.com/tingxiecsu/ConSS/blob/main/search_user_defined_library.py)
 
     config_path = "/model/low_energy/checkpoints/config.yaml"
     pretrain_model_path = "/model/low_energy/checkpoints/checkpoints/model.pth"
