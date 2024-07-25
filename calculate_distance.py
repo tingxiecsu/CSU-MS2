@@ -4,7 +4,7 @@ Created on Mon Sep 19 10:13:35 2022
 
 @author: ZNDX002
 """
-from infer import ModelInference
+from ConSS.infer import ModelInference
 import numpy as np
 import seaborn as sns
 from rdkit import Chem
