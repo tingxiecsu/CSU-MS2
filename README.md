@@ -1,5 +1,5 @@
-# ConSS
-This is the code repo for the paper Contrastive MS/MS Spectra and Structures Pre-training for Cross-modal Compound Identification. We developed a method named ConSS to cross-modal match MS/MS spectra against molecular structures for compound identification.
+# CSU-MS2
+This is the code repo for the paper Contrastively Spectral-structural Unification between MS/MS Spectra and Molecular Structures Enabling Cross-Modal Retrieval for Compound Identification. We developed a method named ConSS to cross-modal match MS/MS spectra against molecular structures for compound identification.
 
 ![Figure github](https://github.com/user-attachments/assets/81ec0f12-2f41-474c-9f3f-02ab2f610f9d)
 ### Package required:
@@ -11,23 +11,23 @@ We recommend to use [conda](https://conda.io/docs/user-guide/install/download.ht
 - [matchms](https://matchms.readthedocs.io/en/latest/)
   
 ## Installation
-The main packages can be seen in [requirements.txt](https://github.com/tingxiecsu/ConSS/tree/main/requirements.txt)
+The main packages can be seen in [requirements.txt](https://github.com/tingxiecsu/CSU-MS2/tree/main/requirements.txt)
 - Install Anaconda
   https://www.anaconda.com/
 - Install main packages in requirements.txt with following commands 
 	```shell
-	conda create --name ConSS python=3.8.18
-	conda activate ConSS
+	conda create --name CSU-MS2S python=3.8.18
+	conda activate CSU-MS2
 	python -m pip install -r requirements.txt
 	```
 
 ## Model training
-Train the model based on your own Structure-Spectrum training dataset with [run.py](https://github.com/tingxiecsu/ConSS/blob/main/ConSS/run.py) function. Multi-gpu or multi-node parallel training can be performed using Distributed Data Parallel (DDP) provided in the code.
+Train the model based on your own Structure-Spectrum training dataset with [run.py](https://github.com/tingxiecsu/CSU-MS2/blob/main/ConSS/run.py) function. Multi-gpu or multi-node parallel training can be performed using Distributed Data Parallel (DDP) provided in the code.
 
     main(rank, world_size, num_gpus, rank_is_set, ds_args)
 
 ## Library searching
-Searching in a smiles library with [search_library.py](https://github.com/tingxiecsu/ConSS/blob/main/search_library.py) function. users Users can load the different collision energy level model according to the collision energy setting, or load three energy level models, and use the weighted scores of different energy levels as the final score with [search_user_defined_library.py](https://github.com/tingxiecsu/ConSS/blob/main/search_user_defined_library.py)
+Searching in a smiles library with [search_library.py](https://github.com/tingxiecsu/CSU-MS2/blob/main/search_library.py) function. users Users can load the different collision energy level model according to the collision energy setting, or load three energy level models, and use the weighted scores of different energy levels as the final score with [search_user_defined_library.py](https://github.com/tingxiecsu/CSU-MS2/blob/main/search_user_defined_library.py)
 
     config_path = "/model/low_energy/checkpoints/config.yaml"
     pretrain_model_path = "/model/low_energy/checkpoints/checkpoints/model.pth"
