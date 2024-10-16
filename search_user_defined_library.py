@@ -145,14 +145,13 @@ if __name__ == "__main__":
             low_similarity = low_similarity.numpy()
             median_similarity = median_similarity.numpy()
             high_similarity = high_similarity.numpy()
-
-            if collision_energy <=15:
-                weighted_similarity = 0.4 * low_similarity + 0.3 * median_similarity + 0.3 * high_similarity
-            elif collision_energy >15 and collision_energy <= 25:
-                weighted_similarity = 0.3 * low_similarity + 0.4 * median_similarity + 0.3 * high_similarity
-            elif collision_energy > 25:
-                weighted_similarity = 0.2 * low_similarity + 0.3 * median_similarity + 0.5 * high_similarity
+            
+            weight1 = (1/abs(collision_energy-10))/((1/abs(collision_energy-10))+(1/abs(collision_energy-20))+(1/abs(collision_energy-40)))
+            weight2 = (1/abs(collision_energy-20))/((1/abs(collision_energy-10))+(1/abs(collision_energy-20))+(1/abs(collision_energy-40)))
+            weight3 = (1/abs(collision_energy-40))/((1/abs(collision_energy-10))+(1/abs(collision_energy-20))+(1/abs(collision_energy-40)))
+   
+            weighted_similarity = weight1 * low_similarity + weight2 * median_similarity + weight3 * high_similarity
             weighted_similarity_scores=[(smiles_lst1[i],canonical_smiles_list1[i],weighted_similarity[i]) for i in range(len(canonical_smiles_list1))]
             weighted_similarity_scores.sort(key=lambda x: x[2], reverse=True)
-            results = pd.DataFrame({'SMILES':[x[0] for x in weighted_similarity_scores],'Canonical SMILES':[x[1] for x in weighted_similarity_scores],'Score':[x[2] for x in weighted_similarity_scores],'Rank':list(range(weighted_similarity_scores))})
+            results = pd.DataFrame({'SMILES':[x[0] for x in weighted_similarity_scores],'Canonical SMILES':[x[1] for x in weighted_similarity_scores],'Score':[x[2] for x in weighted_similarity_scores],'Rank':list(range(1,len(weighted_similarity_scores)+1))})
             results.to_csv(output_file+'spectrum'+str(i)+'.csv')
