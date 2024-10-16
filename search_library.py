@@ -20,6 +20,14 @@ import os
 import requests
 import pubchempy as pc
 from bs4 import BeautifulSoup
+import matchms.filtering as msfilters
+
+def spectrum_processing(s):
+    """This is how one would typically design a desired pre- and post-
+    processing pipeline."""
+    s = msfilters.normalize_intensities(s)
+    s = msfilters.select_by_mz(s, mz_from=0, mz_to=1500)
+    return s
 
 def search_formula(formulaDB,mass, ppm): 
     mmin = mass - mass*ppm/10**6 
@@ -128,13 +136,12 @@ def get_topK_result(library,ms_feature, smiles_feature, topK):
 
 if __name__ == "__main__":
     # Load the model
-    # users Users can load the different collision energy level model according
-    # to the collision energy setting, or load three energy level models, and use 
-    # the weighted scores of different energy levels as the final score
+    ''' Users can load the different collision energy level model according to the collision energy setting, 
+    or load three energy level models, and use the weighted scores of different energy levels as the final score (More recommended because more reliable identification results can be obtained)'''
     config_path = "/model/low_energy/checkpoints/config.yaml"
-    pretrain_model_path = "/model/low_energy/checkpoints/checkpoints/model.pth"
+    single_collision_energy_pretrain_model_path = "/model/low_energy/checkpoints/checkpoints/model.pth"
     model_inference = ModelInference(config_path=config_path,
-                                 pretrain_model_path=pretrain_model_path,
+                                 pretrain_model_path=single_collision_energy_pretrain_model_path,
                                  device="cpu")
     output_file='.../'
     os.mkdir(output_file)
@@ -143,6 +150,7 @@ if __name__ == "__main__":
     for i in tqdm(range(len(ms_list))):
             result=pd.DataFrame(columns=['smiles','score'])
             spectrum = ms_list[i]
+            spectrum = spectrum_processing(spectrum)
             ms_feature = model_inference.ms2_encode(ms_list[i:i+1])
             query_ms = float(spectrum.metadata['precursor_mz'])-1.008
             search_res=search_structure_from_mass(reference_library, query_ms, 10)
