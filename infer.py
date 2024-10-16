@@ -75,17 +75,20 @@ class ModelInference(object):
                 spec_intens = [spec.intensities for spec in ms2_list]
                 num_peaks = [len(i) for i in spec_mzs]
                 spec_mzs = [np.around(spec_mz, decimals=4) for spec_mz in spec_mzs]
-                if len(spec_mzs[0]) > 300:
-                    spec_mzs = [spec_mzs[0][-300:]]
-                    spec_intens = [spec_intens[0][-300:]]
-                    num_peaks=[300]
-                else:
-                    spec_mzs = [np.pad(spec_mz, (0, 300 - len(spec_mz)), mode='constant', constant_values=0) for spec_mz in spec_mzs]
-                    spec_intens = [np.pad(spec_inten, (0, 300 - len(spec_inten)), mode='constant', constant_values=0) for spec_inten in spec_intens]
-                spec_mzs= torch.tensor(spec_mzs).float()
-                spec_intens= torch.tensor(spec_intens).float()
                 num_peaks = torch.LongTensor(num_peaks)
-                spec_tensor,spec_mask = self.model.ms_encoder(spec_mzs,spec_intens,num_peaks)
+                mzs = [torch.from_numpy(spec_mz).float() for spec_mz in spec_mzs]
+                intens = [torch.from_numpy(spec_intens).float() for spec_intens in spec_intens]
+                mzs_tensors = torch.nn.utils.rnn.pad_sequence(
+                        mzs, batch_first=True, padding_value=0
+                    )
+                intens_tensors = torch.nn.utils.rnn.pad_sequence(
+                        intens, batch_first=True, padding_value=0
+                    )
+                mzs_tensors=mzs_tensors.to(self.device)
+                intens_tensors=intens_tensors.to(self.device)
+                num_peaks=num_peaks.to(self.device)
+
+                spec_tensor,spec_mask = self.model.ms_encoder(mzs_tensors,intens_tensors,num_peaks)
                 spec_tensor=self.model.spec_esa(spec_tensor,spec_mask)
                 spec_tensor = self.model.spec_proj(spec_tensor)
                 spec_tensor = spec_tensor/spec_tensor.norm(dim=-1, keepdim=True)
