@@ -65,7 +65,7 @@ class SimCLR(object):
             model = torch.nn.SyncBatchNorm.convert_sync_batchnorm(model).to(self.rank) 
             model = DistributedDataParallel(model, device_ids=[self.rank], find_unused_parameters = True)
 
-        optimizer = torch.optim.Adam(model.parameters(), 
+        optimizer = torch.optim.AdamW(model.parameters(), 
                                         eval(self.config['learning_rate']), 
                                         weight_decay=self.config['weight_decay'])
 
