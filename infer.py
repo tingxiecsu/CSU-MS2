@@ -59,8 +59,6 @@ class ModelInference(object):
                 spec_intens = ms2_list.intensities
                 num_peak = len(spec_mz)
                 spec_mz = np.around(spec_mz, decimals=4)
-                spec_mz = np.pad(spec_mz, (0, 300 - len(spec_mz)), mode='constant', constant_values=0)
-                spec_intens = np.pad(spec_intens, (0, 300 - len(spec_intens)), mode='constant', constant_values=0)
                 spec_mz= torch.tensor(spec_mz).float().unsqueeze(0)
                 spec_intens= torch.tensor(spec_intens).float().unsqueeze(0)
                 num_peak = torch.LongTensor(num_peak).unsqueeze(0)
