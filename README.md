@@ -54,3 +54,11 @@ Searching in a smiles library with [search_library.py](https://github.com/tingxi
             result['smiles']=candidate[0]
             result['score']=score[0]
             result.to_csv(output_file+'results'+str(i)+'.csv')
+	    
+## CSU-MS2 web server and Dataset
+The CSU-MS2 web server and CSU-MS2-DB are hosted on Hugging Face, and can be visited through the following links:
+
+- 🌐 **CSU-MS2 web server**: The application interface allows users to upload unknow spectra and accsess results in real time. Visit the app here: [CSU-MS2 web server](https://huggingface.co/spaces/Tingxie/CSU-MS2).
+
+- 📂 **CSU-MS2-DB**: Explore the dataset here: [CSU-MS2-DB](https://huggingface.co/datasets/Tingxie/CSU-MS2-DB).
+
