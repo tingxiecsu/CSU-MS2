@@ -138,8 +138,8 @@ if __name__ == "__main__":
     # Load the model
     ''' Users can load the different collision energy level model according to the collision energy setting, 
     or load three energy level models, and use the weighted scores of different energy levels as the final score (More recommended because more reliable identification results can be obtained)'''
-    config_path = "/model/low_energy/checkpoints/config.yaml"
-    single_collision_energy_pretrain_model_path = "/model/low_energy/checkpoints/checkpoints/model.pth"
+    config_path = "/hcd_model/low_energy/checkpoints/config.yaml"
+    single_collision_energy_pretrain_model_path = "/hcd_model/low_energy/checkpoints/checkpoints/model.pth"
     model_inference = ModelInference(config_path=config_path,
                                  pretrain_model_path=single_collision_energy_pretrain_model_path,
                                  device="cpu")
