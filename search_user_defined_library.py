@@ -94,18 +94,18 @@ def get_feature(canonical_lst,lst,save_name,model_inference,
 
 if __name__ == "__main__":
     # Load the model
-    config_path_low = "/model/low_energy/checkpoints/config.yaml"
-    pretrain_model_path_low = "/model/low_energy/checkpoints/model.pth"
+    config_path_low = "/hcd_model/low_energy/checkpoints/config.yaml"
+    pretrain_model_path_low = "/hcd_model/low_energy/checkpoints/model.pth"
     model_inference_low = ModelInference(config_path=config_path_low,
                                 pretrain_model_path=pretrain_model_path_low,
                                 device="cpu")
-    config_path_median = "/model/median_energy/checkpoints/config.yaml"
-    pretrain_model_path_median = "/model/median_energy/checkpoints/model.pth"
+    config_path_median = "/hcd_model/median_energy/checkpoints/config.yaml"
+    pretrain_model_path_median = "/hcd_model/median_energy/checkpoints/model.pth"
     model_inference_median = ModelInference(config_path=config_path_median,
                                 pretrain_model_path=pretrain_model_path_median,
                                 device="cpu")
-    config_path_high = "/model/high_energy/checkpoints/config.yaml"
-    pretrain_model_path_high = "/model/high_energy/checkpoints/model.pth"
+    config_path_high = "/hcd_model/high_energy/checkpoints/config.yaml"
+    pretrain_model_path_high = "/hcd_model/high_energy/checkpoints/model.pth"
     model_inference_high = ModelInference(config_path=config_path_high,
                                 pretrain_model_path=pretrain_model_path_high,
                                 device="cpu") 
