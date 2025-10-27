@@ -40,8 +40,8 @@ HYBRID_TYPE = [Chem.rdchem.HybridizationType.SP,
                      Chem.rdchem.HybridizationType.SP3D2,
                      Chem.rdchem.HybridizationType.UNSPECIFIED,
                      Chem.rdchem.HybridizationType.S]
-VALENCE_LIST = list(range(1,7))
-DRGREE_LIST = list(range(1,6))
+VALENCE_LIST = list(range(0,8))
+DRGREE_LIST = list(range(0,5))
 BOND_LIST = [BT.SINGLE, BT.DOUBLE, BT.TRIPLE, BT.AROMATIC]
 BONDDIR_LIST = [
     Chem.rdchem.BondDir.NONE,
@@ -102,8 +102,8 @@ def MolToGraph(smiles):
                 chirality_idx.append(CHIRALITY_LIST.index(Chem.rdchem.ChiralType.CHI_OTHER))
             atomic_number.append(atom.GetAtomicNum())
             hybrid_type_idx.append(HYBRID_TYPE.index(atom.GetHybridization()))
-            valence_idx.append(VALENCE_LIST.index(min(atom.GetTotalValence(),6)))
-            degree_idx.append(DRGREE_LIST.index(min(atom.GetDegree(),5)))
+            valence_idx.append(VALENCE_LIST.index(min(atom.GetTotalValence(),7)))
+            degree_idx.append(DRGREE_LIST.index(min(atom.GetDegree(),4)))
         x1 = torch.tensor(type_idx, dtype=torch.long).view(-1,1)
         x2 = torch.tensor(chirality_idx, dtype=torch.long).view(-1,1)
         x3 = torch.tensor(hybrid_type_idx, dtype=torch.long).view(-1,1)
