@@ -131,7 +131,7 @@ class SmilesModel(nn.Module):
 class FourierEmbedder(nn.Module):
     """Embed a set of mz float values using frequencies"""
 
-    def __init__(self, spec_embed_dim, logmin=-2.5, logmax=3.3):
+    def __init__(self, spec_embed_dim, logmin=2.5, logmax=3.3):
         super().__init__()
         self.d = spec_embed_dim
         self.logmin = logmin
