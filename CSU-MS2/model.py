@@ -10,7 +10,7 @@ import nn_utils as nn_utils
 num_atom_type = 119 # including the extra mask tokens
 num_chirality_tag = 4
 num_hybrid_type = 8
-num_valence_tag = 6
+num_valence_tag = 5
 num_degree_tag = 5
 
 num_bond_type = 5 # including aromatic and self-loop edge
