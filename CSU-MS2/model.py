@@ -247,9 +247,9 @@ class ESA_SPEC(nn.Module):
         cap_embes = self.linear(logits) # Q
         features_in = self.linear1(cap_embes) # M
         mask = attention_mask.unsqueeze(-1) # (B, N, 1)
-        features_in = features_in.masked_fill(mask == 0, -1e4) # (B, N, C)
+        features_in = features_in.masked_fill(mask == 1, -1e4) # (B, N, C)
         features_k_softmax = nn.Softmax(dim=1)(features_in)
-        attn = features_k_softmax.masked_fill(mask == 0, 0)
+        attn = features_k_softmax.masked_fill(mask == 1, 0)
         spec_feature = torch.sum(attn * cap_embes, dim=1) # (B, C)
         return spec_feature
 
