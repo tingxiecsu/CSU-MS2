@@ -99,6 +99,7 @@ class SimCLR(object):
             train_loader.sampler.set_epoch(epoch_counter)
             print(f'Epoch {epoch_counter}')
             train_loss = 0
+            train_n_iter = 0
             for (xis, mzs,intens,num_peaks)  in tqdm(train_loader):
                 optimizer.zero_grad()
                 xis = xis.to(self.device)
@@ -123,8 +124,9 @@ class SimCLR(object):
                 optimizer.step()
                 train_loss += loss.item()
                 n_iter += 1
+                train_n_iter += 1
             if dist.get_rank() == 0:
-                print('Training at Epoch ' + str(epoch_counter + 1) + 'with loss ' + str(train_loss))
+                print('Training at Epoch ' + str(epoch_counter + 1) + 'with loss ' + str(train_loss/train_n_iter))
             # validate the model if requested
             if epoch_counter % self.config['eval_every_n_epochs'] == 0:
                 valid_loss = self._validate(model, valid_loader, n_iter)
@@ -133,9 +135,14 @@ class SimCLR(object):
                 if valid_loss < best_valid_loss:
                     # save the model weights
                     best_valid_loss = valid_loss
+                    model_to_save = model
+                    if isinstance(model_to_save, (torch.nn.parallel.DistributedDataParallel, torch.nn.DataParallel)):
+                        state_dict_to_save = model_to_save.module.state_dict()
+                    else:
+                        state_dict_to_save = model_to_save.state_dict()
                     if dist.get_rank() == 0:
-                        #torch.save(net.module, "saved_model.ckpt") 
-                        torch.save(model.module.state_dict(), os.path.join(model_checkpoints_folder, 'model.pth'))
+                        torch.save(state_dict_to_save,os.path.join(model_checkpoints_folder, 'model.pth'))
+                        
                 if dist.get_rank() == 0:
                     self.writer.add_scalar('validation_loss', valid_loss, global_step=valid_n_iter)
                 valid_n_iter += 1
